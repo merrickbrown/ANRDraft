@@ -1,0 +1,90 @@
+﻿
+@model ANRDraft.Models.DraftCreateModel
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    <script language="javascript" type="text/javascript">
+        function addRow() {
+
+            @{
+                Model.Names.Add("");
+            }
+
+            var index = $("#tbNames").children("tr").length;
+
+            var indexCell = "<td style='display:none'><input name='Names.Index' type='hidden' value='" + index + "' /></td>";
+            var titleCell = "<td><input id='Names_" + index + "' name='Names[" + index + "]' type='text' value='' /></td>";
+            var removeCell = "<td><input id='btnAddName' type='button' value='Remove' onclick='removeRow(" + index + ");' /></td>";
+
+            var newRow = "<tr id='trName" + index + "'>" +
+            indexCell + titleCell + removeCell + "</tr>";
+            $("#tbNames").append(newRow);
+        }
+
+        function removeRow(id) {
+            var controlToBeRemoved = "#trName" + id;
+            $(controlToBeRemoved).remove();
+        }
+    </script>
+</head>
+<body>
+    @using (Html.BeginForm("Index", "Create", FormMethod.Post))
+    {
+        @Html.ValidationSummary(true)
+        @Html.AntiForgeryToken()
+        <div id="createNewDraft">
+            <fieldset>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.SecretName)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.SecretName)
+                    @Html.ValidationMessageFor(model => model.SecretName)
+                    <p> This is the secret name for your draft. It must be unique, so something with your location and date would probably work.</p>
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.DecklistLocator)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.DecklistLocator)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.PackSize)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.PackSize)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.NumRounds)
+                </div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.NumRounds)
+                </div>
+                 <div>
+                        <input id="btnAddName" type="button"
+                               onclick="addRow();" value="Add Name" />
+                     </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <td>
+                                Participant Name
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody id="tbNames"></tbody>
+                </table>
+                </fieldset>
+                </div>
+        <input type="submit" value="Create!">
+
+    }
+</body>
+
+
+
+</html>
