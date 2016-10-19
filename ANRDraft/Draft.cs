@@ -144,7 +144,7 @@ namespace ANRDraft
             Draft result = new Draft(dcm.SecretName, decklist, dcm.Names, dcm.PackSize, dcm.NumRounds);
             return result;
         }
-        public void SelectCard(Participant participant, Card c)
+        public void SelectCardAndPass(Participant participant, Card c)
         {
             lock (_packsLock)
             {
@@ -154,6 +154,8 @@ namespace ANRDraft
 
                     //record who selected the card
                     c.SelectedBy = participant;
+                    //actually select the card!
+                    participant.SelectCard(c);
                     Pack packToPass = _currentPacks[participant];
                     Participant passesTo = PassesTo(participant);
                     //if there are any cards left to be chosen
@@ -192,22 +194,31 @@ namespace ANRDraft
             {
                 //if there are no more rounds, end the draft
                 if (NumRoundsRemaining == 0) { EndDraft(); }
-                //change passign rules
-                PassRight = !PassRight;
-                //populate current packs
-                foreach (Participant p in Participants)
+                else
                 {
-                    SetParticipantCurrentPack(p, RemainingPacks.Dequeue());
+                    //change passign rules
+                    PassRight = !PassRight;
+                    //populate current packs
+                    foreach (Participant p in Participants)
+                    {
+                        SetParticipantCurrentPack(p, RemainingPacks.Dequeue());
+                    }
+                    //decrement remaining rounds
+                    NumRoundsRemaining--;
+                    BroadCastNewRound();
                 }
-                //decrement remaining rounds
-                NumRoundsRemaining--;
             }
-            BroadCastNewRound();
         }
         private void EndDraft()
         {
-            throw new NotImplementedException();
+            BroadCastEndDraft();
         }
+
+        private void BroadCastEndDraft()
+        {
+            Context.Clients.Group(Name).draftOver();
+        }
+
         public bool IsRoundComplete()
         {
             //given the code for selecting and passing packs I am pretty sure if the first condition is true then the second one is as well, but i havent totally though it out yet

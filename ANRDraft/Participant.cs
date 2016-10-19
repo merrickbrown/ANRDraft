@@ -7,7 +7,7 @@ namespace ANRDraft
     public class Participant : IEquatable<Participant>
     {
         string _name;
-        List<Card> selectedCards;
+        private List<Card> _selectedCards;
         readonly Draft _draft;
         public List<Card> currentChoices;
 
@@ -37,11 +37,19 @@ namespace ANRDraft
             }
         }
 
+        public List<Card> SelectedCards
+        {
+            get
+            {
+                return _selectedCards;
+            }
+        }
+
         public Participant(string name, Draft draft)
         {
             _name = name;
             _draft = draft;
-            selectedCards = new List<Card>();
+            _selectedCards = new List<Card>();
             currentChoices = null;
         }
 
@@ -51,10 +59,9 @@ namespace ANRDraft
             return other != null && other.Name.Equals(Name);
         }
 
-        public void SelectCardAndPass(Card c)
+        public void SelectCard(Card c)
         {
-            _draft.SelectCard(this, c);
-            selectedCards.Add(c);
+            _selectedCards.Add(c);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace ANRDraft
 
         public bool TrySelectCard(string draftname, string playername, string cardID)
         {
-            return Do<bool>((d, p, c) => { d.SelectCard(p, c); return true; }, draftname, playername, cardID);
+            return Do<bool>((d, p, c) => { d.SelectCardAndPass(p, c); return true; }, draftname, playername, cardID);
         }
 
 
@@ -64,6 +64,11 @@ namespace ANRDraft
         public IEnumerable<CardViewModel> GetCurrentPack(string draftname, string playername)
         {
             return Do((d, p) => p.currentChoices.Select(card => card.ViewModel), draftname, playername);
+        }
+
+        public IEnumerable<CardViewModel> GetSelectedCards(string draftname, string playername)
+        {
+            return Do((Draft d,Participant p) => p.SelectedCards.Select(card => card.ViewModel), draftname, playername);
         }
 
         public CardViewModel GetCard(string draftname, string cardID)
