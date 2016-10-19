@@ -25,7 +25,7 @@ namespace ANRDraft
 
         }
 
-        public static async Task<CardData> GetCard(string cardID)
+        public static async Task<CardData> GetCardAsync(string cardID)
         {
             using (HttpResponseMessage response = await Instance.GetAsync($"http://netrunnerdb.com/api/2.0/public/card/{cardID}"))
             {
@@ -42,15 +42,34 @@ namespace ANRDraft
                 string decklistResponseText = await decklistResponse.Content.ReadAsStringAsync();
                 JObject decklistResponseObj = JObject.Parse(decklistResponseText);
                 JObject deckListTokens = (JObject)decklistResponseObj["data"].First()["cards"];
-                Dictionary<string, int> deckListData = new Dictionary<string, int>();
+                Dictionary<string, int> decklistData = new Dictionary<string, int>();
                 foreach(var kvp in deckListTokens)
                 {
-                    deckListData[kvp.Key] = kvp.Value.Value<int>();
+                    decklistData[kvp.Key] = kvp.Value.Value<int>();
                 }
-                ConcurrentDictionary<string, int> decklistRaw = new ConcurrentDictionary<string, int>(deckListData);
-                ConcurrentDictionary<CardData, int> decklist = new ConcurrentDictionary<CardData, int>();
-                await Task.WhenAll(decklistRaw.Keys.Select(cardID => Task.Run(async () => decklist[await GetCard(cardID)] = decklistRaw[cardID])));
-                return new Dictionary<CardData, int>(decklist);
+                var cardTasks = decklistData.Keys.Select(cardID => GetCardAsync(cardID));
+                Dictionary<CardData, int> result = new Dictionary<CardData, int>();
+                var cards = await Task.WhenAll(cardTasks);
+                bool identityFound = false;
+                foreach (var cd in cards)
+                {
+                    if (identityFound)
+                    {
+                        result[cd] = decklistData[cd.DBID];
+                    }
+                    else
+                    {
+                        if (((JObject)cd.Data).Value<string>("type_code") == "identity")
+                        {
+                            identityFound = true;
+                        }
+                        else
+                        {
+                            result[cd] = decklistData[cd.DBID];
+                        }
+                    }
+                }
+                return result;
             }
         }
 

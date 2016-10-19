@@ -9,7 +9,7 @@ namespace ANRDraft
     {
         List<Card> _cards;
 
-        public IEnumerable<Card> remainingCards { get { return Cards.Where(c => c.SelectedBy == null); } }
+        public IEnumerable<Card> remainingCards { get { return Cards.Where(c => !c.IsSelected); } }
         public List<Card> Cards
         {
             get

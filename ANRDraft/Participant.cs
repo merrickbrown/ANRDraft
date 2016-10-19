@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ANRDraft
 {
@@ -25,7 +26,14 @@ namespace ANRDraft
 
         public Models.ParticipantViewModel ViewModel { get
             {
-                return new Models.ParticipantViewModel();
+                return new Models.ParticipantViewModel
+                {
+                    DraftName = _draft.Name,
+                    Name = _name
+                    //NumWaitingPacks = _draft.WaitingPacks(this).Count,
+                    //SelectedCards = selectedCards.Select(c=> c.ViewModel),
+                    //CurrentPack = currentChoices.Select(c => c.ViewModel)
+                };
             }
         }
 
@@ -47,11 +55,6 @@ namespace ANRDraft
         {
             _draft.SelectCard(this, c);
             selectedCards.Add(c);
-        }
-
-        public void SelectCardAndPass(int cardIndex)
-        {
-            SelectCardAndPass(currentChoices[cardIndex]);
         }
     }
 }

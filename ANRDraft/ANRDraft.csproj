@@ -154,12 +154,12 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\CardViewModel.cs" />
     <Compile Include="Models\DraftCreateModel.cs" />
     <Compile Include="Models\DraftViewModel.cs" />
     <Compile Include="Models\ParticipantViewModel.cs" />
     <Compile Include="NRDBClient.cs" />
     <Compile Include="DraftHub.cs" />
-    <Compile Include="MappedConnectionsHub.cs" />
     <Compile Include="Pack.cs" />
     <Compile Include="Participant.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -204,6 +204,7 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Create\Index.cshtml" />
     <Content Include="Views\Draft\Index.cshtml" />
+    <Content Include="Views\Draft\Play.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

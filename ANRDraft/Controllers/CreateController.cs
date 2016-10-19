@@ -25,10 +25,14 @@ namespace ANRDraft.Controllers
         {
             if (ModelState.IsValid)
             {
-                Draft d = await Draft.AsyncCreateDraft(dcm);
+                Dictionary<CardData, int> decklist = await NRDBClient.GetDecklist(dcm.DecklistLocator);
+                if(decklist.Values.Sum() < dcm.NumRounds * dcm.PackSize * dcm.Names.Count)
+                {
+                    return RedirectToAction("Index");
+                }
+                Draft d = Draft.CreateDraft(dcm, decklist);
                 if (DraftManager.Instance.TryAddDraft(d))
                 {
-                    DraftManager.Instance.incNum();
                     return Redirect("Draft/Index/" + dcm.SecretName);
                 }
             }

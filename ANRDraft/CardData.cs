@@ -4,10 +4,12 @@ using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Runtime.Serialization;
 
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 namespace ANRDraft
 {
+    [Serializable]
     public class CardData : IEquatable<CardData>
     {
         private readonly string _dBID;
@@ -34,7 +36,7 @@ namespace ANRDraft
         {
             get
             {
-                return new Uri($"https://netrunnerdb.com/en/card/{_dBID}");
+                return new Uri($"https://netrunnerdb.com/en/card/{DBID}");
             }
         }
 
@@ -42,11 +44,11 @@ namespace ANRDraft
         {
             get
             {
-                return new Uri($"https://netrunnerdb.com/card_image/{_dBID}.png");
+                return new Uri($"https://netrunnerdb.com/card_image/{DBID}.png");
             }
         }
 
-        public JObject Data
+        public object Data
         {
             get
             {

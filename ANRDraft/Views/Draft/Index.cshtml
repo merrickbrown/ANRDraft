@@ -6,7 +6,11 @@
 
 <h2>Show</h2>
 <p>Your draft was created on @Model.Created.Date.ToShortDateString()</p>
-<p>Tell your fellow participants to go to /Draft/Index/@Model.Name to access the draft.</p>
+<p>Tell your fellow participants to go to /Draft/Play/@Model.Name/*playername* to access the draft.</p>
+<p> @foreach (var name in @Model.PlayerNames)
+{
+    <a href="/Draft/Play/@Model.Name/@name"> @name </a>
+}</p>
 <ul>
     @foreach(var kvp in @Model.Decklist)
     {

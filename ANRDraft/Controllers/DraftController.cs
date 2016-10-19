@@ -13,7 +13,7 @@ namespace ANRDraft.Controllers
         {
             if (id != null)
             {
-                Draft d = DraftManager.Instance.draftByName(id);
+                Draft d = DraftManager.Instance.DraftByName(id);
                 if (d != null)
                 {
                     return View(d.ViewModel);
@@ -22,12 +22,12 @@ namespace ANRDraft.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        [Route("draft/{draftname}/{participantname}")]
+        [Route("draft/play/{draftname}/{participantname}")]
         public ActionResult Play(string draftname, string participantname)
         {
             if (draftname != null)
             {
-                Participant p = DraftManager.Instance.draftByName(draftname).participantByName(participantname);
+                Participant p = DraftManager.Instance.DraftByName(draftname).ParticipantByName(participantname);
                 if (p != null)
                 {
                     return View(p.ViewModel);

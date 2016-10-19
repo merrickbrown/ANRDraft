@@ -10,5 +10,6 @@ namespace ANRDraft.Models
         public string Name { get;  set; }
         public DateTime Created { get;  set; }
         public Dictionary<string,int> Decklist { get; set; }
+        public List<string> PlayerNames { get; set; }
     }
 }

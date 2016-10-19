@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNet.SignalR;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,21 +11,27 @@ namespace ANRDraft
     public class DraftManager
     {
         //singleton
-        private static readonly Lazy<DraftManager> _instance = new Lazy<DraftManager>(() => new DraftManager());
-        private volatile int _num = 0;
+        private static readonly Lazy<DraftManager> _instance = new Lazy<DraftManager>(() => new DraftManager(GlobalHost.ConnectionManager.GetHubContext<DraftHub>()));
+
 
         private ConcurrentDictionary<string, Draft> _drafts = new ConcurrentDictionary<string, Draft>();
         private object _draftsLock = new object();
+        private IHubContext _context;
 
+        private DraftManager(IHubContext context)
+        {
+            _context = context;
+        }
 
-        public int Num
+        public static DraftManager Instance { get { return _instance.Value; } }
+
+        public IHubContext Context
         {
             get
             {
-                return _num;
+                return _context;
             }
         }
-        public static DraftManager Instance { get { return _instance.Value; } }
 
         public IEnumerable<Draft> GetAllDrafts()
         {
@@ -67,12 +74,8 @@ namespace ANRDraft
             }
         }
 
-        public void incNum()
-        {
-            _num++;
-        }
 
-        public Draft draftByName(string draftname)
+        public Draft DraftByName(string draftname)
         {
             Draft returnDraft;
             if (_drafts.TryGetValue(draftname, out returnDraft))

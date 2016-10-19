@@ -12,6 +12,22 @@ namespace ANRDraft
         //should be unique per draft instance
         private readonly string _cardID;
 
+        public Participant SelectedBy
+        {
+            private get
+            {
+                return _selectedBy;
+            }
+
+            set
+            {
+                if (_selectedBy == null)
+                {
+                    _selectedBy = value;
+                }
+                else throw new InvalidOperationException("Cannot select an already selected card");
+            }
+        }
         public Card(CardData cd, string cardID)
         {
             _cardData = cd;
@@ -26,20 +42,12 @@ namespace ANRDraft
             }
         }
 
-        public Participant SelectedBy
+
+        public bool IsSelected
         {
             get
             {
-                return _selectedBy;
-            }
-
-            set
-            {
-                if (_selectedBy == null)
-                {
-                    _selectedBy = value;
-                }
-                else throw new InvalidOperationException("Cannot select an already selected card");
+                return SelectedBy != null;
             }
         }
 
@@ -80,5 +88,18 @@ namespace ANRDraft
         {
             return CardID.GetHashCode();
         }
+
+        public Models.CardViewModel ViewModel
+        {
+            get
+            {
+                return new Models.CardViewModel
+                {
+                    Data = _cardData,
+                    ID = _cardID
+                };
+            }
+        }
+
     }
 }

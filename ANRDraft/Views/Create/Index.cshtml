@@ -29,10 +29,16 @@
             var controlToBeRemoved = "#trName" + id;
             $(controlToBeRemoved).remove();
         }
+        $(document).ready(function () {
+            $("#frmDraftSetup").submit(function () {
+                $(".btnSubmit").attr("disabled", true);
+                return true;
+            });
+        });
     </script>
 </head>
 <body>
-    @using (Html.BeginForm("Index", "Create", FormMethod.Post))
+    @using (Html.BeginForm("Index", "Create", FormMethod.Post, new {id = "frmDraftSetup" }))
     {
         @Html.ValidationSummary(true)
         @Html.AntiForgeryToken()
@@ -80,7 +86,7 @@
                 </table>
                 </fieldset>
                 </div>
-        <input type="submit" value="Create!">
+        <input class="btnSubmit" type="submit" value="Create!">
 
     }
 </body>

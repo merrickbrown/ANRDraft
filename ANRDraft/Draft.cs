@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,20 +14,17 @@ namespace ANRDraft
         private readonly DateTime _created;
         private readonly IReadOnlyDictionary<CardData, int> _decklist;
         private List<Card> _cardList;
-
-
+        private Dictionary<string, Card> _cardLookup;
         readonly LinkedList<Participant> _participants;
-        private readonly Queue<Pack> _remainingPacks;
+        private Queue<Pack> _remainingPacks;
+
         int numRoundsRemaining;
         bool passRight;
-
         private object _newRoundLock = new object();
-
+        private object _packsLock = new object();
         private readonly ConcurrentDictionary<Participant, Queue<Pack>> _waitingPacks = new ConcurrentDictionary<Participant, Queue<Pack>>();
         private readonly ConcurrentDictionary<Participant, Pack> _currentPacks = new ConcurrentDictionary<Participant, Pack>();
-
         private volatile bool _updatingPacks = false;
-
         public List<string> ParticipantNames
         {
             get
@@ -78,7 +77,7 @@ namespace ANRDraft
                 passRight = value;
             }
         }
-        public Queue<Pack> WaitingPack(Participant p)
+        public Queue<Pack> WaitingPacks(Participant p)
         {
             return _waitingPacks[p];
 
@@ -89,23 +88,40 @@ namespace ANRDraft
 
 
         }
-
         private Draft(string name, Dictionary<CardData, int> decklist, List<string> participantNames, int packSize, int numRounds)
         {
             _name = name;
             _decklist = decklist;
             _created = DateTime.Now;
             _cardList = new List<Card>();
-            //create all cards
+            _cardLookup = new Dictionary<string, Card>();
+            //create all cards and populate _cardLookup
             foreach (var kvp in decklist)
             {
                 for (int i = 0; i < kvp.Value; i++)
                 {
-                    _cardList.Add(new Card(kvp.Key, kvp.Key.DBID + _name + kvp.Value.ToString()));
+                    string uniqueID = kvp.Key.DBID + _name + i.ToString();
+                    Card c = new Card(kvp.Key, uniqueID);
+                    _cardList.Add(c);
+                    _cardLookup[uniqueID] = c;
                 }
             }
+
+
+            //shuffle cards using draftname
+            Random rng = new Random(name.GetHashCode());
+            int n = _cardList.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                Card v = _cardList[k];
+                _cardList[k] = _cardList[n];
+                _cardList[n] = v;
+            }
+
             //create participants
-            _participants = new LinkedList<Participant>(participantNames.Select(n => new Participant(n, this)));
+            _participants = new LinkedList<Participant>(participantNames.Select(pname => new Participant(pname, this)));
             foreach (Participant p in _participants)
             {
                 _waitingPacks[p] = new Queue<Pack>();
@@ -121,74 +137,82 @@ namespace ANRDraft
                 List<Card> currPackList = AllCards.GetRange(packIndex * packSize, packSize);
                 RemainingPacks.Enqueue(new Pack(currPackList));
             }
-
+            StartNewRound();
         }
-
-        public static async Task<Draft> AsyncCreateDraft(Models.DraftCreateModel dcm)
+        public static Draft CreateDraft(Models.DraftCreateModel dcm, Dictionary<CardData, int> decklist)
         {
-            Dictionary<CardData, int> decklist = await NRDBClient.GetDecklist(dcm.DecklistLocator);
             Draft result = new Draft(dcm.SecretName, decklist, dcm.Names, dcm.PackSize, dcm.NumRounds);
             return result;
         }
-
-
         public void SelectCard(Participant participant, Card c)
         {
-            //record who selected the card
-            c.SelectedBy = participant;
-            Pack packToPass = _currentPacks[participant];
-            Participant passesTo = PassesTo(participant);
-            //if there are any cards left to be chosen
-            if (packToPass.remainingCards.Count() > 0)
+            lock (_packsLock)
             {
-                _waitingPacks[passesTo].Enqueue(packToPass);
-                //check to see if the next player had no current pack
-                if (_currentPacks[passesTo] == null)
+                if (!_updatingPacks)
                 {
-                    //automatically dequeue the given pack and assign
-                    SetParticipantCurrentPack(passesTo, WaitingPack(passesTo).Dequeue());
+                    _updatingPacks = true;
+
+                    //record who selected the card
+                    c.SelectedBy = participant;
+                    Pack packToPass = _currentPacks[participant];
+                    Participant passesTo = PassesTo(participant);
+                    //if there are any cards left to be chosen
+                    if (packToPass.remainingCards.Count() > 0)
+                    {
+                        _waitingPacks[passesTo].Enqueue(packToPass);
+                        //check to see if the next player had no current pack
+                        if (_currentPacks[passesTo] == null)
+                        {
+                            //automatically dequeue the given pack and assign
+                            SetParticipantCurrentPack(passesTo, WaitingPacks(passesTo).Dequeue());
+                            NotifyParticipantOfNewPack(passesTo);
+                        }
+                    }
+                    //if there are any waiting packs
+                    if (_waitingPacks[participant].Count > 0)
+                    {
+                        //dequeue and make the pack the current pack
+                        SetParticipantCurrentPack(participant, _waitingPacks[participant].Dequeue());
+                    }
+                    // otherwise set their currentpack to null
+                    else
+                    {
+                        SetParticipantCurrentPack(participant, null);
+                    }
+                    //check if round is over
+                    if (IsRoundComplete()) StartNewRound();
+                    _updatingPacks = false;
+                    
                 }
             }
-            //if there are any waiting packs
-            if (_waitingPacks[participant].Count > 0)
-            {
-                //dequeue and make the pack the current pack
-                SetParticipantCurrentPack(participant, _waitingPacks[participant].Dequeue());
-            }
-            // otherwise set their currentpack to null
-            else
-            {
-                SetParticipantCurrentPack(participant, null);
-            }
-            //check if round is over
-            if (isRoundComplete()) startNewRound();
         }
-        public void startNewRound()
+        private void StartNewRound()
         {
-            //if there are no more rounds, end the draft
-            if (NumRoundsRemaining == 0) { endDraft(); }
-            //change passign rules
-            PassRight = !PassRight;
-            //populate current packs
-            foreach (Participant p in Participants)
+            lock (_newRoundLock)
             {
-                SetParticipantCurrentPack(p, RemainingPacks.Dequeue());
+                //if there are no more rounds, end the draft
+                if (NumRoundsRemaining == 0) { EndDraft(); }
+                //change passign rules
+                PassRight = !PassRight;
+                //populate current packs
+                foreach (Participant p in Participants)
+                {
+                    SetParticipantCurrentPack(p, RemainingPacks.Dequeue());
+                }
+                //decrement remaining rounds
+                NumRoundsRemaining--;
             }
-            //decrement remaining rounds
-            NumRoundsRemaining--;
+            BroadCastNewRound();
         }
-
-        private void endDraft()
+        private void EndDraft()
         {
             throw new NotImplementedException();
         }
-
-        public bool isRoundComplete()
+        public bool IsRoundComplete()
         {
             //given the code for selecting and passing packs I am pretty sure if the first condition is true then the second one is as well, but i havent totally though it out yet
             return _currentPacks.Values.All(cp => cp == null) && _waitingPacks.Values.All(q => q.Count == 0);
         }
-
         //Returns who p passes to
         private Participant PassesTo(Participant p)
         {
@@ -203,11 +227,10 @@ namespace ANRDraft
                 return pNode.Previous?.Value ?? Participants.Last.Value;
             }
         }
-        public Participant participantByName(string name)
+        public Participant ParticipantByName(string name)
         {
             return Participants.Where(p => p.Name == name).SingleOrDefault();
         }
-
         private void SetParticipantCurrentPack(Participant participant, Pack pack)
         {
             _currentPacks[participant] = pack;
@@ -220,8 +243,6 @@ namespace ANRDraft
                 participant.currentChoices = new List<Card>();
             }
         }
-
-
         public string Name
         {
             get
@@ -229,7 +250,6 @@ namespace ANRDraft
                 return _name;
             }
         }
-
         public DateTime Created
         {
             get
@@ -237,20 +257,22 @@ namespace ANRDraft
                 return _created;
             }
         }
-
         public Models.DraftViewModel ViewModel
         {
             get
             {
-                Models.DraftViewModel model = new Models.DraftViewModel { Name = Name, Created = Created, Decklist = new Dictionary<string, int>() };
-                foreach(var kvp in Decklist)
+                Models.DraftViewModel model = new Models.DraftViewModel {
+                    Name = Name,
+                    Created = Created,
+                    Decklist = new Dictionary<string, int>(),
+                    PlayerNames = Participants.Select(p => p.Name).ToList()};
+                foreach (var kvp in Decklist)
                 {
                     model.Decklist[kvp.Key.Title] = kvp.Value;
                 }
                 return model;
             }
         }
-
         public IReadOnlyDictionary<CardData, int> Decklist
         {
             get
@@ -258,5 +280,24 @@ namespace ANRDraft
                 return _decklist;
             }
         }
+        public IHubContext Context { get { return DraftManager.Instance.Context; }}
+
+        public void BroadCastNewRound()
+        {
+            Context.Clients.Group(Name).newRound();
+
+        }
+
+        public void NotifyParticipantOfNewPack(Participant p)
+        {
+            Context.Clients.Group(Name).newPack(p.Name);
+        }
+
+        public Card CardByID(string uniqueID)
+        {
+            return _cardLookup[uniqueID];
+        }
+
+
     }
 }
