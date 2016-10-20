@@ -39,37 +39,43 @@ namespace ANRDraft
         {
             using (HttpResponseMessage decklistResponse = await Instance.GetAsync($"http://netrunnerdb.com/api/2.0/public/decklist/{deckID}"))
             {
-                string decklistResponseText = await decklistResponse.Content.ReadAsStringAsync();
-                JObject decklistResponseObj = JObject.Parse(decklistResponseText);
-                JObject deckListTokens = (JObject)decklistResponseObj["data"].First()["cards"];
-                Dictionary<string, int> decklistData = new Dictionary<string, int>();
-                foreach(var kvp in deckListTokens)
+                if (decklistResponse.IsSuccessStatusCode)
                 {
-                    decklistData[kvp.Key] = kvp.Value.Value<int>();
-                }
-                var cardTasks = decklistData.Keys.Select(cardID => GetCardAsync(cardID));
-                Dictionary<CardData, int> result = new Dictionary<CardData, int>();
-                var cards = await Task.WhenAll(cardTasks);
-                bool identityFound = false;
-                foreach (var cd in cards)
-                {
-                    if (identityFound)
+                    string decklistResponseText = await decklistResponse.Content.ReadAsStringAsync();
+                    JObject decklistResponseObj = JObject.Parse(decklistResponseText);
+                    JObject deckListTokens = (JObject)decklistResponseObj["data"].First()["cards"];
+                    Dictionary<string, int> decklistData = new Dictionary<string, int>();
+                    foreach (var kvp in deckListTokens)
                     {
-                        result[cd] = decklistData[cd.DBID];
+                        decklistData[kvp.Key] = kvp.Value.Value<int>();
                     }
-                    else
+                    var cardTasks = decklistData.Keys.Select(cardID => GetCardAsync(cardID));
+                    Dictionary<CardData, int> result = new Dictionary<CardData, int>();
+                    var cards = await Task.WhenAll(cardTasks);
+                    bool identityFound = false;
+                    foreach (var cd in cards)
                     {
-                        if (((JObject)cd.Data).Value<string>("type_code") == "identity")
-                        {
-                            identityFound = true;
-                        }
-                        else
+                        if (identityFound)
                         {
                             result[cd] = decklistData[cd.DBID];
                         }
+                        else
+                        {
+                            if (((JObject)cd.Data).Value<string>("type_code") == "identity")
+                            {
+                                identityFound = true;
+                            }
+                            else
+                            {
+                                result[cd] = decklistData[cd.DBID];
+                            }
+                        }
                     }
+                    return result;
+                } else
+                {
+                    return null;
                 }
-                return result;
             }
         }
 

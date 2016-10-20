@@ -37,6 +37,7 @@
     </script>
 </head>
 <body>
+    <h5 class="text-info">@Model</h5>
     @using (Html.BeginForm("Index", "Create", FormMethod.Post, new {id = "frmDraftSetup" }))
     {
         @Html.ValidationSummary(true)
@@ -49,7 +50,7 @@
                 <div class="editor-field">
                     @Html.EditorFor(model => model.SecretName)
                     @Html.ValidationMessageFor(model => model.SecretName)
-                    <p> This is the secret name for your draft. It must be unique, so something with your location and date would probably work.</p>
+                    <p> This is the unique name for your draft, which you will use for access. Anyone with this name will have access to your draft, so keep it a secret!</p>
                 </div>
                 <div class="editor-label">
                     @Html.LabelFor(model => model.DecklistLocator)

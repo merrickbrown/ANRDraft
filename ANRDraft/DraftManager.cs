@@ -17,6 +17,7 @@ namespace ANRDraft
         private ConcurrentDictionary<string, Draft> _drafts = new ConcurrentDictionary<string, Draft>();
         private object _draftsLock = new object();
         private IHubContext _context;
+        private int _count = 0;
 
         private DraftManager(IHubContext context)
         {
@@ -33,6 +34,26 @@ namespace ANRDraft
             }
         }
 
+        public int Count
+        {
+            get
+            {
+                return _count;
+            }
+
+            set
+            {
+                _count = value;
+            }
+        }
+
+        public bool Contains(string draftname)
+        {
+            return _drafts.ContainsKey(draftname);
+        }
+
+
+
         public IEnumerable<Draft> GetAllDrafts()
         {
             return _instance.Value._drafts.Values;
@@ -43,16 +64,14 @@ namespace ANRDraft
             if (d == null) return false;
             else
             {
-                lock (_draftsLock)
+                if (_drafts.TryAdd(d.Name, d))
                 {
-                    if(_drafts.ContainsKey(d.Name))
-                    {
-                        return false;
-                    } else
-                    {
-                        _drafts.TryAdd(d.Name, d);
-                        return true;
-                    }
+                    _count++;
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
         }
@@ -62,13 +81,13 @@ namespace ANRDraft
             if (d == null) return false;
             else
             {
-                lock(_draftsLock)
+                if (_drafts.TryRemove(d.Name, out d))
                 {
-                    if (_drafts.ContainsKey(d.Name))
-                    {
-                        _drafts.TryRemove(d.Name, out d);
-                        return true;
-                    }
+                    _count--;
+                    return true;
+                }
+                else
+                {
                     return false;
                 }
             }
@@ -78,14 +97,14 @@ namespace ANRDraft
         public Draft DraftByName(string draftname)
         {
             Draft returnDraft;
-            if (_drafts.TryGetValue(draftname, out returnDraft))
-            {
-                return returnDraft;
-            }
-            else
-            {
-                return null;
-            }
+                if (_drafts.TryGetValue(draftname, out returnDraft))
+                {
+                    return returnDraft;
+                }
+                else
+                {
+                    return null;
+                }
         }
 
     }

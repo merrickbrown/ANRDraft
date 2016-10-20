@@ -6,7 +6,9 @@ $(function () {
     var $selectedCards = $('#selectedCards');
     var arrySelectedCards = [];
     var updatePack = function (draft) {
+        $currentPack.hide();
         draft.server.getCurrentPack(draftname, playername).done(function (cards) {
+            
             $currentPack.empty();
             $.each(cards, function (i, card) {
                 var $img = $(document.createElement('img'));
@@ -16,22 +18,48 @@ $(function () {
                 $img.attr('alt', card.Data.Title);
                 $img.attr('class', "cardimage");
                 $img.dblclick(function () {
-                    $currentPack.hide();
-                    draft.server.trySelectCard(draftname, playername, ID).done(
-                    function () {
-                        addCardToSelectedList(card);
-                        showSelectedList();
-                        updatePack(draft);
-                        $currentPack.show();
+                    $currentPack.fadeOut(150, function () {
+                        draft.server.trySelectCard(draftname, playername, card.ID).done(
+                        function () {
+                            addCardToSelectedList(card);
+                            showSelectedList();
+                            updatePack(draft);
+
+                        }
+                        );
+                    });
+                });
+
+                var tapped = false
+                $($img).on("touchstart", function (e) {
+                    if (!tapped) { //if tap is not set, set up single tap
+                        tapped = setTimeout(function () {
+                            tapped = null
+                            //insert things you want to do when single tapped
+                        }, 300);   //wait 300ms then run single click code
+                    } else {    //tapped within 300ms of last tap. double tap
+                        clearTimeout(tapped); //stop single tap callback
+                        tapped = null
+                        $currentPack.fadeOut(150, function () {
+                            draft.server.trySelectCard(draftname, playername, card.ID).done(
+                            function () {
+                                addCardToSelectedList(card);
+                                showSelectedList();
+                                updatePack(draft);
+                            });
+                        });
+                        //insert things you want to do when double tapped
                     }
-                    );
+                    e.preventDefault()
                 });
                 $currentPack.prepend($img);
             });
             $('#message').focus();
+            $currentPack.fadeIn(150);
         });
     };
 
+    
     var addCardToSelectedList = function (card) {
         var added = false;
         for (var i = 0; i < arrySelectedCards.length; i++) {
@@ -47,6 +75,7 @@ $(function () {
     };
 
     var showSelectedList = function () {
+        
         $selectedCards.empty();
         for (var i = 0; i < arrySelectedCards.length; i++) {
             var $item = $(document.createElement('tr'));

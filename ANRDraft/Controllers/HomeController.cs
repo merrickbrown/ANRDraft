@@ -10,7 +10,7 @@ namespace ANRDraft.Controllers
     {
         public ActionResult Index()
         {
-            return View(DraftManager.Instance.GetAllDrafts());
+            return View(DraftManager.Instance.Count);
         }
 
         public ActionResult About()
