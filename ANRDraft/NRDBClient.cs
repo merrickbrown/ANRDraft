@@ -25,11 +25,11 @@ namespace ANRDraft
 
         }
 
-        public static async Task<CardData> GetCardAsync(string cardID)
+        public static CardData GetCard(string cardID)
         {
-            using (HttpResponseMessage response = await Instance.GetAsync($"http://netrunnerdb.com/api/2.0/public/card/{cardID}"))
+            using (HttpResponseMessage response = Instance.GetAsync($"http://netrunnerdb.com/api/2.0/public/card/{cardID}").Result)
             {
-                string result = await response.Content.ReadAsStringAsync();
+                string result = response.Content.ReadAsStringAsync().Result;
 
                 return new CardData(cardID, result);
             }
@@ -49,9 +49,9 @@ namespace ANRDraft
                     {
                         decklistData[kvp.Key] = kvp.Value.Value<int>();
                     }
-                    var cardTasks = decklistData.Keys.Select(cardID => GetCardAsync(cardID));
                     Dictionary<CardData, int> result = new Dictionary<CardData, int>();
-                    var cards = await Task.WhenAll(cardTasks);
+                    var cards = decklistData.Keys.AsParallel().AsOrdered().Select(cardID => GetCard(cardID));
+                    //var cards = decklistData.Keys.AsParallel().AsOrdered().WithDegreeOfParallelism(20).Select(cardID => GetCard(cardID));
                     bool identityFound = false;
                     foreach (var cd in cards)
                     {

@@ -31,16 +31,17 @@ $(function () {
                 });
 
                 var tapped = false
-                $($img).on("touchstart", function (e) {
+                $img.on("touchstart", function (e) {
                     if (!tapped) { //if tap is not set, set up single tap
                         tapped = setTimeout(function () {
                             tapped = null
-                            //insert things you want to do when single tapped
+                            $img.toggleClass("hovered");
                         }, 300);   //wait 300ms then run single click code
                     } else {    //tapped within 300ms of last tap. double tap
                         clearTimeout(tapped); //stop single tap callback
                         tapped = null
                         $currentPack.fadeOut(150, function () {
+                            $img.toggleClass("hovered");
                             draft.server.trySelectCard(draftname, playername, card.ID).done(
                             function () {
                                 addCardToSelectedList(card);

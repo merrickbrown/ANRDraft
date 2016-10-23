@@ -29,15 +29,25 @@
             $(controlToBeRemoved).remove();
         }
         $(document).ready(function () {
-            $("#frmDraftSetup").submit(function () {
-                $(".btnSubmit").attr("disabled", true);
-                return true;
+            addRow();
+            $(".btnSubmit").click(function () {
+                $(".btnSubmit").prop("disabled", true);
+                $("#frmDraftSetup").submit();
+            });
+
+            $("#frmDraftSetup").bind('invalid-form.validate', function () {
+                $(".btnSubmit").prop("disabled", false);
+
+            });
+
+            $("#defaultDecklistIDs").change(function () {
+                $("#DecklistLocator").val($("#defaultDecklistIDs option:selected").data("deckid"));
             });
         });
     </script>
 </head>
 <body>
-    <h5 class="text-info">@Model</h5>
+    <div class="alert alert-danger" role="alert">@Model.Message</div>
     @using (Html.BeginForm("Index", "Create", FormMethod.Post, new {id = "frmDraftSetup" }))
     {
         @Html.ValidationSummary(true)
@@ -45,48 +55,71 @@
         <div id="createNewDraft">
             <fieldset>
                 <div class="editor-label">
-                    @Html.LabelFor(model => model.SecretName)
+                    @Html.LabelFor(model => model.SecretName, "Draft Name")
                 </div>
                 <div class="editor-field">
-                    @Html.EditorFor(model => model.SecretName)
+                    @Html.EditorFor(model => model.SecretName, new { placeholder = "Enter the draft name" })
                     @Html.ValidationMessageFor(model => model.SecretName)
                     <p> This is the unique name for your draft, which you will use for access. Anyone with this name will have access to your draft, so keep it a secret!</p>
                 </div>
                 <div class="editor-label">
-                    @Html.LabelFor(model => model.DecklistLocator)
+                    @Html.LabelFor(model => model.DecklistLocator, "Decklist ID")
                 </div>
                 <div class="editor-field">
                     @Html.EditorFor(model => model.DecklistLocator)
+                    @Html.ValidationMessageFor(model => model.DecklistLocator)
+                    <select id="defaultDecklistIDs">
+                        <option value="0" data-deckID="">Suggested Decklists</option>
+                        <option value="1" data-deckID="38263">Stimhack Cube (Corp)</option>
+                        <option value="2" data-deckID="38261">Stimhack Cube (Runner)</option>
+                        <option value="3" data-deckID="37328">Xenasis' Cube (Corp)</option>
+                        <option value="4" data-deckID="37327">Xenasis' Cube (Runner)</option>
+                        <option value="5" data-deckID="38478">Hypercube (Corp)</option>
+                        <option value="6" data-deckID="38479">Hypercube (Runner)</option>
+                    </select>
+                    <p>The decklist ID is the number in the URL when you view the deck on <a href="https://netrunnerdb.com/">netrunnerdb.com</a>. You can only use a <strong>public</strong> deck hosted on <a href="https://netrunnerdb.com/">netrunnerdb</a>, so if you want to use a decklist that you've made, make sure to publish it.</p>
                 </div>
                 <div class="editor-label">
-                    @Html.LabelFor(model => model.PackSize)
+                    @Html.LabelFor(model => model.PackSize, "Cards per pack")
                 </div>
                 <div class="editor-field">
                     @Html.EditorFor(model => model.PackSize)
+                    @Html.ValidationMessageFor(model => model.PackSize)
                 </div>
                 <div class="editor-label">
-                    @Html.LabelFor(model => model.NumRounds)
+                    @Html.LabelFor(model => model.NumRounds, "Number of rounds")
                 </div>
                 <div class="editor-field">
                     @Html.EditorFor(model => model.NumRounds)
+                    @Html.ValidationMessageFor(model => model.NumRounds)
                 </div>
                  <div>
-                        <input id="btnAddName" type="button"
-                               onclick="addRow();" value="Add Name" />
+
                      </div>
                 <table>
                     <thead>
                         <tr>
                             <td>
-                                Participant Name
+                                <label>Participant Name</label>
                             </td>
+                            <td>
+                                <input id="btnAddName" type="button"
+                                       onclick="addRow();" value="Add Name" />
+                            </td>
+                        </tr>
+                        <tr>
+
+
                         </tr>
                     </thead>
                     <tbody id="tbNames"></tbody>
                 </table>
                 </fieldset>
                 </div>
+                <div>
         <input class="btnSubmit" type="submit" value="Create!">
+                    <p>Longer decklists may take some time to load (~20sec or more if many people are trying to all create drafts at once)</p>
+                </div>
 
     }
 </body>

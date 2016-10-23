@@ -1,9 +1,9 @@
 ﻿@{
     ViewBag.Title = "Home Page";
 }
-@model IEnumerable<Draft>
+@model int
 
 <div id="draftList" title="Ongoing Drafts">
-    <h2>@Model.Count().ToString() Ongoing Drafts</h2>
+    <h2>@Model.ToString() Ongoing Drafts</h2>
     <a href="/Create/">Add new draft...</a>
 </div>

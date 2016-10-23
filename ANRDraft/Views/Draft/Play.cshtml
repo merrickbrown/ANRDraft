@@ -22,16 +22,21 @@
 
 
 
-
 <div class="container">
     <div class="row">
-        <div class="col-xs-12 col-md-6 col-md-push-3">
+        <div class="col-md-12 col-lg-8 col-lg-push-1">
+            <div id="currentPack" style="display: block;"><img id="04012test0" src="https://netrunnerdb.com/card_image/04012.png" alt="Celebrity Gift" class="cardimage"><img id="11053test0" src="https://netrunnerdb.com/card_image/11053.png" alt="DNA Tracker" class="cardimage"><img id="04059test0" src="https://netrunnerdb.com/card_image/04059.png" alt="Paper Wall" class="cardimage"><img id="05004test0" src="https://netrunnerdb.com/card_image/05004.png" alt="House of Knives" class="cardimage"><img id="03017test0" src="https://netrunnerdb.com/card_image/03017.png" alt="Ichi 2.0" class="cardimage"><img id="04115test0" src="https://netrunnerdb.com/card_image/04115.png" alt="Shinobi" class="cardimage"><img id="04074test0" src="https://netrunnerdb.com/card_image/04074.png" alt="Tsurugi" class="cardimage"><img id="01069test1" src="https://netrunnerdb.com/card_image/01069.png" alt="Project Junebug" class="cardimage"><img id="01075test0" src="https://netrunnerdb.com/card_image/01075.png" alt="Chum" class="cardimage"><img id="02112test0" src="https://netrunnerdb.com/card_image/02112.png" alt="Ronin" class="cardimage"></div>
+        </div>
+            <div class="alert alert-info alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                Double-click a card to select it.
+            </div>
             <div id="currentPack"></div>
         </div>
-        <div class="col-xs-6 col-md-3 col-md-pull-6">
+        <div class="col-md-6 col-lg-1 col-lg-pull-9">
             <table id="selectedCards"></table>
         </div>
-        <div class="col-xs-6 col-md-3">
+        <div class="col-md-6 col-lg-3" z-index="-1">
             <div class="input-group">
                 <input type="text" id="message" class="form-control" />
                 <span class="input-group-btn"><input class="btn btn-default" type="button" id="sendmessage" value="Send" /></span>

@@ -153,7 +153,18 @@ namespace ANRDraft
                     _updatingPacks = true;
 
                     //record who selected the card
-                    c.SelectedBy = participant;
+                    try
+                    {
+                        // check that this is actually a card in the current pack
+                        if (!participant.currentChoices.Contains(c)) throw new Exception();
+                        c.SelectedBy = participant;
+
+                    }
+                    catch
+                    {
+                        _updatingPacks = false;
+                        return;
+                    }
                     //actually select the card!
                     participant.SelectCard(c);
                     Pack packToPass = _currentPacks[participant];

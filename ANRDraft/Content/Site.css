@@ -1,5 +1,4 @@
 ﻿body {
-    padding-top: 50px;
     padding-bottom: 20px;
 }
 
@@ -23,7 +22,7 @@ textarea {
     max-width: 280px;
 }
 
-.cardimage {
+.cardimage  {
     border-top-left-radius: 3.33% 2.39%;
     border-top-right-radius: 3.33% 2.39%;
     border-bottom-left-radius: 3.33% 2.39%;
@@ -33,10 +32,12 @@ textarea {
     -o-transition: all .1s ease; /* IE 9 */
     -ms-transition: all .1s ease; /* Opera */
     transition: all .1s ease;
-    width: 25%;
+    max-width: 200px;
+    min-width: 150px;
 }
 
-    .cardimage:hover {
+
+    .cardimage:hover, .cardimage.hovered {
         -webkit-transform: scale(1.5); /* Safari and Chrome */
         -moz-transform: scale(1.5); /* Firefox */
         -ms-transform: scale(1.5); /* IE 9 */
