@@ -9,11 +9,12 @@ namespace ANRDraft.Controllers
     public class DraftController : Controller
     {
         // GET: Draft
-        public ActionResult Index(string id)
+        [Route("draft/{draftname}")]
+        public ActionResult Index(string draftname)
         {
-            if (id != null)
+            if (draftname != null)
             {
-                Draft d = DraftManager.Instance.DraftByName(id);
+                Draft d = DraftManager.Instance.DraftByName(draftname);
                 if (d != null)
                 {
                     return View(d.ViewModel);
@@ -22,7 +23,7 @@ namespace ANRDraft.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        [Route("draft/play/{draftname}/{participantname}")]
+        [Route("play/{draftname}/{participantname}")]
         public ActionResult Play(string draftname, string participantname)
         {
             if (draftname != null)

@@ -9,9 +9,9 @@
     <script language="javascript" type="text/javascript">
         function addRow() {
 
-            @{
+            @*@{
                 Model.Names.Add("");
-            }
+            }*@
 
             var index = $("#tbNames").children("tr").length;
 
@@ -47,7 +47,7 @@
     </script>
 </head>
 <body>
-    <div class="alert alert-danger" role="alert">@Model.Message</div>
+    <div class="alert alert-danger" role="alert">@Model.ServerErrorMessage</div>
     @using (Html.BeginForm("Index", "Create", FormMethod.Post, new {id = "frmDraftSetup" }))
     {
         @Html.ValidationSummary(true)
@@ -68,7 +68,7 @@
                 <div class="editor-field">
                     @Html.EditorFor(model => model.DecklistLocator)
                     @Html.ValidationMessageFor(model => model.DecklistLocator)
-                    <select id="defaultDecklistIDs">
+                    <select id="defaultDecklistIDs" class="form-control">
                         <option value="0" data-deckID="">Suggested Decklists</option>
                         <option value="1" data-deckID="38263">Stimhack Cube (Corp)</option>
                         <option value="2" data-deckID="38261">Stimhack Cube (Runner)</option>

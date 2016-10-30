@@ -15,7 +15,7 @@ namespace ANRDraft.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
+            ViewBag.Message = "This is a protoype for a web app that allows players to draft decks for Android:Netrunner remotely.";
 
             return View();
         }

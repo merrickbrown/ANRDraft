@@ -34,6 +34,6 @@ namespace ANRDraft.Models
             Names = new List<string>();
         }
 
-        public string Message { get; set; }
+        public string ServerErrorMessage { get; set; }
     }
 }

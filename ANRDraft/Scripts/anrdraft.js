@@ -17,39 +17,38 @@ $(function () {
                 $img.attr('src', card.Data.ImageUri);
                 $img.attr('alt', card.Data.Title);
                 $img.attr('class', "cardimage");
-                $img.dblclick(function () {
-                    $currentPack.fadeOut(150, function () {
-                        draft.server.trySelectCard(draftname, playername, card.ID).done(
-                        function () {
-                            addCardToSelectedList(card);
-                            showSelectedList();
-                            updatePack(draft);
+                //$img.dblclick(function () {
+                //    $currentPack.fadeOut(150, function () {
+                //        draft.server.trySelectCard(draftname, playername, ID).done(
+                //        function () {
+                //            addCardToSelectedList(card);
+                //            showSelectedList();
+                //            updatePack(draft);
 
-                        }
-                        );
-                    });
-                });
-
+                //        }
+                //        );
+                //    });
+                //});
                 var tapped = false
-                $img.on("touchstart", function (e) {
+                $img.on("click", function (e) {
                     if (!tapped) { //if tap is not set, set up single tap
+                        $img.toggleClass("hovered");
+                        if (screen.width <= 480) { $('html,body').animate({ scrollTop: $img.offset().top - ($(window).height() - $img.outerHeight(true)) / 2 }, '150'); }
                         tapped = setTimeout(function () {
                             tapped = null
-                            $img.toggleClass("hovered");
                         }, 300);   //wait 300ms then run single click code
                     } else {    //tapped within 300ms of last tap. double tap
                         clearTimeout(tapped); //stop single tap callback
                         tapped = null
                         $currentPack.fadeOut(150, function () {
                             $img.toggleClass("hovered");
-                            draft.server.trySelectCard(draftname, playername, card.ID).done(
+                            draft.server.trySelectCard(draftname, playername, ID).done(
                             function () {
                                 addCardToSelectedList(card);
                                 showSelectedList();
                                 updatePack(draft);
                             });
                         });
-                        //insert things you want to do when double tapped
                     }
                     e.preventDefault()
                 });
@@ -100,7 +99,7 @@ $(function () {
     // Create a function that the hub can call back to display messages.
     draft.client.addNewMessageToPage = function (name, message) {
         // Add the message to the page.
-        $('#discussion').append('<li><strong>' + htmlEncode(name)
+        $('#discussion').prepend('<li><strong>' + htmlEncode(name)
             + '</strong>: ' + htmlEncode(message) + '</li>');
     };
     $("#message").focus(function() {
@@ -149,9 +148,12 @@ $(function () {
         init();
     });
        // $.connect.hub.reconnected(init());
+
+    
 });
 // This optional function html-encodes messages for display in the page.
 function htmlEncode(value) {
     var encodedValue = $('<div />').text(value).html();
     return encodedValue;
 }
+

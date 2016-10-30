@@ -32,12 +32,12 @@ textarea {
     -o-transition: all .1s ease; /* IE 9 */
     -ms-transition: all .1s ease; /* Opera */
     transition: all .1s ease;
-    max-width: 200px;
     min-width: 150px;
+    align-content: center
 }
 
 
-    .cardimage:hover, .cardimage.hovered {
+    .no-touch .cardimage:hover, .cardimage.hovered {
         -webkit-transform: scale(1.5); /* Safari and Chrome */
         -moz-transform: scale(1.5); /* Firefox */
         -ms-transform: scale(1.5); /* IE 9 */
