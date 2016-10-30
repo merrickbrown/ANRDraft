@@ -15,10 +15,10 @@ namespace ANRDraft
         private readonly string _dBID;
         private readonly JObject _data;
 
-        public CardData(string cardDBID, string rawData)
+        public CardData(string cardDBID, JObject data)
         {
             _dBID = cardDBID;
-            _data = (JObject)JObject.Parse(rawData)["data"].First();
+            _data = data;
         }
 
         public string Title { get { return _data["title"].Value<string>(); } }
@@ -48,7 +48,7 @@ namespace ANRDraft
             }
         }
 
-        public object Data
+        public JObject Data
         {
             get
             {

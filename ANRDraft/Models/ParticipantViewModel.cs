@@ -10,7 +10,7 @@ namespace ANRDraft.Models
         public string DraftName { get; set; }
         public string Name { get; set; }
 
-        public int NumWaitingPacks { get; set; }
+        //public int NumWaitingPacks { get; set; }
 
         //public IEnumerable<CardViewModel> SelectedCards { get; set; }
 

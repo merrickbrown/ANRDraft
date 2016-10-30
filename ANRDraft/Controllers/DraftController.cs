@@ -8,7 +8,7 @@ namespace ANRDraft.Controllers
 {
     public class DraftController : Controller
     {
-        // GET: Draft
+        // GET: Draft/draftname
         [Route("draft/{draftname}")]
         public ActionResult Index(string draftname)
         {
@@ -22,7 +22,7 @@ namespace ANRDraft.Controllers
             }
             return RedirectToAction("Index", "Home");
         }
-
+        // GET: Play/draftname/player
         [Route("play/{draftname}/{participantname}")]
         public ActionResult Play(string draftname, string participantname)
         {

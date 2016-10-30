@@ -5,8 +5,10 @@ $(function () {
     var $currentPack = $('#currentPack');
     var $selectedCards = $('#selectedCards');
     var arrySelectedCards = [];
+    // the function that updates the pack
     var updatePack = function (draft) {
-        $currentPack.hide();
+
+        //$currentPack.hide();
         draft.server.getCurrentPack(draftname, playername).done(function (cards) {
             
             $currentPack.empty();

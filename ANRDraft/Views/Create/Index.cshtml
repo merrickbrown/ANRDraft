@@ -9,9 +9,6 @@
     <script language="javascript" type="text/javascript">
         function addRow() {
 
-            @*@{
-                Model.Names.Add("");
-            }*@
 
             var index = $("#tbNames").children("tr").length;
 
@@ -47,7 +44,9 @@
     </script>
 </head>
 <body>
-    <div class="alert alert-danger" role="alert">@Model.ServerErrorMessage</div>
+    @if(Model.ServerErrorMessage.Count() > 0) {
+        <div class="alert alert-danger" role="alert">@Model.ServerErrorMessage</div>
+    }
     @using (Html.BeginForm("Index", "Create", FormMethod.Post, new {id = "frmDraftSetup" }))
     {
         @Html.ValidationSummary(true)
