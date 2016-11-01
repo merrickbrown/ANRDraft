@@ -9,6 +9,9 @@ using System.Runtime.Serialization;
 #pragma warning disable CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
 namespace ANRDraft
 {
+    /// <summary>
+    /// Represents a card in Android: Netrunner
+    /// </summary>
     [Serializable]
     public class CardData : IEquatable<CardData>
     {
@@ -20,10 +23,14 @@ namespace ANRDraft
             _dBID = cardDBID;
             _data = data;
         }
-
+        /// <summary>
+        /// The title of the card
+        /// </summary>
         public string Title { get { return _data["title"].Value<string>(); } }
 
-
+        /// <summary>
+        /// The ID given to the card by netrunnerdb.com
+        /// </summary>
         public string DBID
         {
             get
@@ -31,7 +38,9 @@ namespace ANRDraft
                 return _dBID;
             }
         }
-
+        /// <summary>
+        /// The address of the card information page on netrunnerdb.com
+        /// </summary>
         public Uri DBUri
         {
             get
@@ -39,7 +48,9 @@ namespace ANRDraft
                 return new Uri($"https://netrunnerdb.com/en/card/{DBID}");
             }
         }
-
+        /// <summary>
+        /// The address of the card image on netrunnerdb.com
+        /// </summary>
         public Uri ImageUri
         {
             get
@@ -55,6 +66,11 @@ namespace ANRDraft
                 return _data;
             }
         }
+        /// <summary>
+        /// Checks for equality of card data
+        /// </summary>
+        /// <param name="other">The other card</param>
+        /// <returns>true if and only if the database IDs match</returns>
         public bool Equals(CardData other)
         {
             return DBID.Equals(other.DBID);

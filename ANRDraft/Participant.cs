@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace ANRDraft
 {
+    /// <summary>
+    /// Models a participant of the draft.
+    /// </summary>
     public class Participant : IEquatable<Participant>
     {
         string _name;

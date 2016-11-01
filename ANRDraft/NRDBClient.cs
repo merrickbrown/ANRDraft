@@ -11,20 +11,26 @@ using System.Web;
 
 namespace ANRDraft
 {
-    public class NRDBClient : HttpClient
+    /// <summary>
+    /// Provides access to netrunnerdb and 
+    /// </summary>
+    public class NRDBClient
     {
         //static singleton
         private static readonly NRDBClient _instance = new NRDBClient();
-        private Dictionary<string, JObject> _allCards = new Dictionary<string, JObject>();
+        private Dictionary<string, JObject> _allCards;
+        private readonly HttpClient _httpClient;
 
         public static NRDBClient Instance
         {
             get { return _instance; }
         }
 
-        private NRDBClient() : base()
+        private NRDBClient()
         {
-            using (HttpResponseMessage response = GetAsync("http://netrunnerdb.com/api/2.0/public/cards").Result)
+            _httpClient = new HttpClient();
+            _allCards = new Dictionary<string, JObject>();
+            using (HttpResponseMessage response = _httpClient.GetAsync("http://netrunnerdb.com/api/2.0/public/cards").Result)
             {
                 string result = response.Content.ReadAsStringAsync().Result;
                 IEnumerable<JObject> cards = JObject.Parse(result)["data"].ToList().Select(obj => (JObject)obj);
@@ -36,14 +42,14 @@ namespace ANRDraft
             }
         }
 
-        public static CardData GetCard(string cardID)
+        public CardData GetCard(string cardID)
         {
                 return new CardData(cardID, Instance._allCards[cardID]);
         }
         // what if the deckID is not valid?
-        public static async Task<Dictionary<CardData, int>> GetDecklist(string deckID)
+        public async Task<Dictionary<CardData, int>> GetDecklist(string deckID)
         {
-            using (HttpResponseMessage decklistResponse = await Instance.GetAsync($"http://netrunnerdb.com/api/2.0/public/decklist/{deckID}"))
+            using (HttpResponseMessage decklistResponse = await Instance._httpClient.GetAsync($"http://netrunnerdb.com/api/2.0/public/decklist/{deckID}"))
             {
                 if (decklistResponse.IsSuccessStatusCode)
                 {
@@ -56,8 +62,6 @@ namespace ANRDraft
                         decklistData[kvp.Key] = kvp.Value.Value<int>();
                     }
                     Dictionary<CardData, int> result = new Dictionary<CardData, int>();
-                    //var cards = decklistData.Keys.AsParallel().AsOrdered().Select(cardID => GetCard(cardID));
-                    //var cards = decklistData.Keys.AsParallel().AsOrdered().WithDegreeOfParallelism(20).Select(cardID => GetCard(cardID));
                     var cards = decklistData.Keys.Select(GetCard);
                     bool identityFound = false;
                     foreach (var cd in cards)

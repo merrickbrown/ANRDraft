@@ -8,6 +8,9 @@ using System.Web;
 
 namespace ANRDraft
 {
+    /// <summary>
+    /// Manages all the ongoing drafts, also holds a reference to the signalr context
+    /// </summary>
     public class DraftManager
     {
         //singleton
@@ -15,7 +18,6 @@ namespace ANRDraft
 
 
         private ConcurrentDictionary<string, Draft> _drafts = new ConcurrentDictionary<string, Draft>();
-        private object _draftsLock = new object();
         private IHubContext _context;
         private int _count = 0;
 

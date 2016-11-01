@@ -9,21 +9,42 @@ using ANRDraft.Models;
 
 namespace ANRDraft
 {
-
+    /// <summary>
+    /// SignalR Hub to communicate with clients.
+    /// </summary>
     public class DraftHub : Hub
     {
-
+        /// <summary>
+        /// Calls addNewMessageToPage on each client playing a given draft
+        /// </summary>
+        /// <param name="draftname">The name of the draft to broadcast to</param>
+        /// <param name="playername">The name of the player sending the message</param>
+        /// <param name="message">The message text</param>
         public void NewChatMessage(string draftname, string playername, string message)
         {
             Clients.Group(draftname).addNewMessageToPage(playername, message);
         }
-
+        /// <summary>
+        /// Try to select the given card for the playername in the draft
+        /// </summary>
+        /// <param name="draftname">The name of the draft</param>
+        /// <param name="playername">The player's name who wants to select the card</param>
+        /// <param name="cardID">The unique ID of the card to select</param>
+        /// <returns>true if the all the parameters were successfully looked up and the selection was successful, false otherwise</returns>
         public bool TrySelectCard(string draftname, string playername, string cardID)
         {
-            return Do<bool>((d, p, c) => { d.SelectCardAndPass(p, c); return true; }, draftname, playername, cardID);
+            return Do<bool>((d, p, c) => { d.TrySelectCardAndPass(p, c); return true; }, draftname, playername, cardID);
         }
 
-
+        /// <summary>
+        /// A utility method that makes it simpler to call a method that depends on a draft, a player, and/or a card id
+        /// </summary>
+        /// <typeparam name="TResult">The return value of the callback function</typeparam>
+        /// <param name="callback">the function to call once the references have been looked up</param>
+        /// <param name="draftname">the name of the draft</param>
+        /// <param name="playername">the participant name</param>
+        /// <param name="cardID">the unique card ID</param>
+        /// <returns>the result of callback</returns>
         private TResult Do<TResult>(Func<Draft, Participant, Card, TResult> callback, string draftname, string playername, string cardID)
         {
             Draft d = DraftManager.Instance.DraftByName(draftname);
@@ -75,7 +96,10 @@ namespace ANRDraft
         {
             return Do((Draft d, Card c) => c.ViewModel, draftname, cardID);
         }
-
+        /// <summary>
+        /// Adds this connection ID to the given draft
+        /// </summary>
+        /// <param name="draftname">The name of the draft to join</param>
         public Task JoinDraft(string draftname)
         {
             return Groups.Add(Context.ConnectionId, draftname);

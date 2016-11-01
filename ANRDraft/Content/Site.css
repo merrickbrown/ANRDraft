@@ -32,15 +32,23 @@ textarea {
     -o-transition: all .1s ease; /* IE 9 */
     -ms-transition: all .1s ease; /* Opera */
     transition: all .1s ease;
-    min-width: 150px;
-    align-content: center
+    min-width: 200px;
+    width: 25%;
 }
 
 
     .no-touch .cardimage:hover, .cardimage.hovered {
-        -webkit-transform: scale(1.5); /* Safari and Chrome */
-        -moz-transform: scale(1.5); /* Firefox */
-        -ms-transform: scale(1.5); /* IE 9 */
-        -o-transform: scale(1.5); /* Opera */
-        transform: scale(1.5);
+        -webkit-transform: scale(1.50); /* Safari and Chrome */
+        -moz-transform:    scale(1.5); /* Firefox */
+        -ms-transform:     scale(1.5); /* IE 9 */
+        -o-transform:      scale(1.5); /* Opera */
+        transform:         scale(1.5);
+    }
+
+    .container {
+        max-width: 1400px;
+    }
+
+    #currentPack {
+        margin: auto;
     }

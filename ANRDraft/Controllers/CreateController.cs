@@ -54,7 +54,7 @@ namespace ANRDraft.Controllers
                     }
                     if (repeats) throw new Exception("All the players must be given different names. (Player names are case-insensitive.)");
                     //try to get the decklist from netrunnerdb
-                    Dictionary<CardData, int> decklist = await NRDBClient.GetDecklist(dcm.DecklistLocator);
+                    Dictionary<CardData, int> decklist = await NRDBClient.Instance.GetDecklist(dcm.DecklistLocator);
                     //if that fails, let the user know
                     if (decklist == null) throw new Exception("Whoops! It appears that was not a valid decklist ID, please try again!");
                     //check that there are enough cards for the number of rounds and players

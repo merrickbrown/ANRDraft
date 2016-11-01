@@ -14,7 +14,8 @@ namespace ANRDraft
         public void Configuration(IAppBuilder app)
         {
             app.MapSignalR();
-
+            //set up the card database
+            var setup = NRDBClient.Instance;
         }
     }
 }

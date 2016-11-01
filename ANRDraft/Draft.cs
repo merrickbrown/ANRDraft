@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ANRDraft
 {
+    /// <summary>
+    /// This represents a single ANR draft
+    /// </summary>
     public class Draft
     {
         private readonly string _name;
@@ -25,6 +28,9 @@ namespace ANRDraft
         private readonly ConcurrentDictionary<Participant, Queue<Pack>> _waitingPacks = new ConcurrentDictionary<Participant, Queue<Pack>>();
         private readonly ConcurrentDictionary<Participant, Pack> _currentPacks = new ConcurrentDictionary<Participant, Pack>();
         private volatile bool _updatingPacks = false;
+        /// <summary>
+        /// A list of the participant names
+        /// </summary>
         public List<string> ParticipantNames
         {
             get
@@ -32,6 +38,9 @@ namespace ANRDraft
                 return Participants.Select(p => p.Name).ToList();
             }
         }
+        /// <summary>
+        /// Returns the linked list backing the participants of the draft 
+        /// </summary>
         public LinkedList<Participant> Participants
         {
             get
@@ -39,6 +48,9 @@ namespace ANRDraft
                 return _participants;
             }
         }
+        /// <summary>
+        /// All the packs that have not been drafted, nor are currently being drafted
+        /// </summary>
         public Queue<Pack> RemainingPacks
         {
             get
@@ -46,6 +58,9 @@ namespace ANRDraft
                 return _remainingPacks;
             }
         }
+        /// <summary>
+        /// A list of the cards that populated the draft
+        /// </summary>
         public List<Card> AllCards
         {
             get
@@ -53,6 +68,9 @@ namespace ANRDraft
                 return _cardList;
             }
         }
+        /// <summary>
+        /// The number of rounds remaining in the draft, not including the current round
+        /// </summary>
         public int NumRoundsRemaining
         {
             get
@@ -65,6 +83,9 @@ namespace ANRDraft
                 numRoundsRemaining = value;
             }
         }
+        /// <summary>
+        /// true if the rule is to pass cards to the right, false if otherwise
+        /// </summary>
         public bool PassRight
         {
             get
@@ -77,17 +98,33 @@ namespace ANRDraft
                 passRight = value;
             }
         }
-        public Queue<Pack> WaitingPacks(Participant p)
+        /// <summary>
+        /// The packs that a given participant still needs to look at
+        /// </summary>
+        /// <param name="p">The participant</param>
+        /// <returns>A Queue of the packs that the participant still needs to choose from, not including their current pack.</returns>
+        private Queue<Pack> WaitingPacks(Participant p)
         {
             return _waitingPacks[p];
 
         }
+        /// <summary>
+        /// The pack that a given particiant is choosing from
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
         public Pack CurrentPack(Participant p)
         {
             return _currentPacks[p];
-
-
         }
+        /// <summary>
+        /// Creates and starts a new draft
+        /// </summary>
+        /// <param name="name">the name which will identify the draft</param>
+        /// <param name="decklist">the number of each card and its data that will be used to populate the packs</param>
+        /// <param name="participantNames">the names fo the participants</param>
+        /// <param name="packSize">how many cards will initially fill each pack</param>
+        /// <param name="numRounds">the number of rounds in the draft</param>
         private Draft(string name, Dictionary<CardData, int> decklist, List<string> participantNames, int packSize, int numRounds)
         {
             _name = name;
@@ -100,6 +137,7 @@ namespace ANRDraft
             {
                 for (int i = 0; i < kvp.Value; i++)
                 {
+                    //the unique ID is just {database ID}{draft name}{copy number}
                     string uniqueID = kvp.Key.DBID + _name + i.ToString();
                     Card c = new Card(kvp.Key, uniqueID);
                     _cardList.Add(c);
@@ -108,7 +146,7 @@ namespace ANRDraft
             }
 
 
-            //shuffle cards using draftname
+            //shuffle cards using draftname as the seed - it is not properly random so that if something goes wrong, a draft can be restarted and the players can re-pick the same cards
             Random rng = new Random(name.GetHashCode());
             int n = _cardList.Count;
             while (n > 1)
@@ -122,11 +160,13 @@ namespace ANRDraft
 
             //create participants
             _participants = new LinkedList<Participant>(participantNames.Select(pname => new Participant(pname, this)));
+
             foreach (Participant p in _participants)
             {
-                _waitingPacks[p] = new Queue<Pack>();
+                _waitingPacks[p] = new Queue<Pack>(_participants.Count);
             }
             NumRoundsRemaining = numRounds;
+            //since we want the draft to start with passing to the right, we set this to false, so that when the first round starts, it will be set to true 
             PassRight = false;
             //num packs will be num rounds * num participants
             int numPacks = numRounds * _participants.Count;
@@ -137,6 +177,7 @@ namespace ANRDraft
                 List<Card> currPackList = AllCards.GetRange(packIndex * packSize, packSize);
                 RemainingPacks.Enqueue(new Pack(currPackList));
             }
+            //start the round
             StartNewRound();
         }
         public static Draft CreateDraft(Models.DraftCreateModel dcm, Dictionary<CardData, int> decklist)
@@ -144,59 +185,66 @@ namespace ANRDraft
             Draft result = new Draft(dcm.SecretName, decklist, dcm.Names, dcm.PackSize, dcm.NumRounds);
             return result;
         }
-        public void SelectCardAndPass(Participant participant, Card c)
+        /// <summary>
+        /// A participant selects a card and passes their current pack to the next player. If the participant has any waiting packs, that gets assigned to their current pack as well.
+        /// </summary>
+        /// <param name="participant">The participant who is selecting a card</param>
+        /// <param name="c">The card to be selected</param>
+        /// <returns>true if the selection was successful, otherwise false</returns>
+        public bool TrySelectCardAndPass(Participant participant, Card c)
         {
+            //lock the packs - we only want one thread to have access to the waiting packs at a time. 
             lock (_packsLock)
             {
+                //I don't think this is necessary, but I really don't want multiple threads updating the waiting packs at the same time
                 if (!_updatingPacks)
                 {
                     _updatingPacks = true;
 
-                    //record who selected the card
                     try
                     {
                         // check that this is actually a card in the current pack
-                        if (!participant.currentChoices.Contains(c)) throw new Exception();
+                        if (!participant.currentChoices.Contains(c)) throw new Exception("That card is no longer in that pack!");
+                        //record who selected the card
                         c.SelectedBy = participant;
-
                     }
                     catch
                     {
                         _updatingPacks = false;
-                        return;
+                        return false;
                     }
-                    //actually select the card!
+                    //this is outside of the try-catch block because any exception here is really catastrophic, in that we don't have code to recover from it
+
                     participant.SelectCard(c);
                     Pack packToPass = _currentPacks[participant];
                     Participant passesTo = PassesTo(participant);
-                    //if there are any cards left to be chosen
-                    if (packToPass.remainingCards.Count() > 0)
+                    if (packToPass.remainingCards.Count() > 0)  //if there are any cards left to be chosen
                     {
                         _waitingPacks[passesTo].Enqueue(packToPass);
-                        //check to see if the next player had no current pack
-                        if (_currentPacks[passesTo] == null)
+                        if (_currentPacks[passesTo] == null) //check to see if the next player had no current pack
                         {
-                            //automatically dequeue the given pack and assign
-                            SetParticipantCurrentPack(passesTo, WaitingPacks(passesTo).Dequeue());
+                            SetParticipantCurrentPack(passesTo, WaitingPacks(passesTo).Dequeue()); //dequeue the given pack and assign to the correct participant
                             NotifyParticipantOfNewPack(passesTo);
                         }
                     }
-                    //if there are any waiting packs
-                    if (_waitingPacks[participant].Count > 0)
+
+                    if (_waitingPacks[participant].Count > 0) //if there are any waiting packs
                     {
-                        //dequeue and make the pack the current pack
-                        SetParticipantCurrentPack(participant, _waitingPacks[participant].Dequeue());
+
+                        SetParticipantCurrentPack(participant, _waitingPacks[participant].Dequeue()); //dequeue and make that pack the current pack
                     }
-                    // otherwise set their currentpack to null
+
                     else
                     {
-                        SetParticipantCurrentPack(participant, null);
+                        SetParticipantCurrentPack(participant, null); // otherwise set the currentpack to null
                     }
-                    //check if round is over
-                    if (IsRoundComplete()) StartNewRound();
+
+                    if (IsRoundComplete()) StartNewRound(); //check if round is over, and if so, start a new one
                     _updatingPacks = false;
-                    
+                    return true;
+
                 }
+                return false;
             }
         }
         private void StartNewRound()
@@ -207,7 +255,7 @@ namespace ANRDraft
                 if (NumRoundsRemaining == 0) { EndDraft(); }
                 else
                 {
-                    //change passign rules
+                    //toggle passign rules
                     PassRight = !PassRight;
                     //populate current packs
                     foreach (Participant p in Participants)
@@ -230,12 +278,16 @@ namespace ANRDraft
             Context.Clients.Group(Name).draftOver();
         }
 
-        public bool IsRoundComplete()
+        private bool IsRoundComplete()
         {
             //given the code for selecting and passing packs I am pretty sure if the first condition is true then the second one is as well, but i havent totally though it out yet
             return _currentPacks.Values.All(cp => cp == null) && _waitingPacks.Values.All(q => q.Count == 0);
         }
-        //Returns who p passes to
+        /// <summary>
+        /// Returns who gets passed to by the current passing rules.
+        /// </summary>
+        /// <param name="p">The participant who is doing the passing</param>
+        /// <returns>The participant who gets passed to</returns>
         private Participant PassesTo(Participant p)
         {
             if (PassRight)
@@ -253,9 +305,16 @@ namespace ANRDraft
         {
             return Participants.Where(p => p.Name == name).SingleOrDefault();
         }
+        /// <summary>
+        /// Sets a current pack for the given participant
+        /// </summary>
+        /// <param name="participant">The participant who's pack we want to set</param>
+        /// <param name="pack">Which pack to set</param>
         private void SetParticipantCurrentPack(Participant participant, Pack pack)
         {
             _currentPacks[participant] = pack;
+
+            // should I refactor this into participant? pros/cons?
             if (pack != null)
             {
                 participant.currentChoices = pack.remainingCards.ToList();
@@ -272,7 +331,7 @@ namespace ANRDraft
                 return _name;
             }
         }
-        public DateTime Created
+        private DateTime Created
         {
             get
             {
@@ -283,11 +342,13 @@ namespace ANRDraft
         {
             get
             {
-                Models.DraftViewModel model = new Models.DraftViewModel {
+                Models.DraftViewModel model = new Models.DraftViewModel
+                {
                     Name = Name,
                     Created = Created,
                     Decklist = new Dictionary<string, int>(),
-                    PlayerNames = Participants.Select(p => p.Name).ToList()};
+                    PlayerNames = Participants.Select(p => p.Name).ToList()
+                };
                 foreach (var kvp in Decklist)
                 {
                     model.Decklist[kvp.Key.Title] = kvp.Value;
@@ -295,22 +356,22 @@ namespace ANRDraft
                 return model;
             }
         }
-        public IReadOnlyDictionary<CardData, int> Decklist
+        private IReadOnlyDictionary<CardData, int> Decklist
         {
             get
             {
                 return _decklist;
             }
         }
-        public IHubContext Context { get { return DraftManager.Instance.Context; }}
+        private IHubContext Context { get { return DraftManager.Instance.Context; } }
 
-        public void BroadCastNewRound()
+        private void BroadCastNewRound()
         {
             Context.Clients.Group(Name).newRound();
 
         }
 
-        public void NotifyParticipantOfNewPack(Participant p)
+        private void NotifyParticipantOfNewPack(Participant p)
         {
             Context.Clients.Group(Name).newPack(p.Name);
         }
