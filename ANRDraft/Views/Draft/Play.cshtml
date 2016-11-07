@@ -14,13 +14,13 @@
     </script>
 }
 
-<h2>View</h2>
+<h2>Draft: @Model.DraftName</h2>
 
 
 
-<div class="container">
+<div class="container" id="draftcontainer">
     <div class="row">
-        <div class="col-md-12 col-lg-7 col-lg-push-2">
+        <div class="col-md-12 col-lg-7 push-lg-2">
             <div class="alert alert-info alert-dismissible" role="alert">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 Double-click a card to select it.
@@ -28,8 +28,14 @@
             <div><div id="currentPack"></div></div>
             
         </div>
-        <div class="col-md-6 col-lg-2 col-lg-pull-7">
-            <table id="selectedCards"></table>
+        <div class="col-md-6 col-lg-2 pull-lg-7">
+            <table class="table table-sm">
+                <thead>
+                        @Model.Name's Cards
+                </thead>
+                <tbody id="selectedCards"></tbody>
+
+            </table>
         </div>
         <div class="col-md-6 col-lg-3">
             <div class="input-group">

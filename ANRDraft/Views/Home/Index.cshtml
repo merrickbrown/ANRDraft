@@ -3,7 +3,8 @@
 }
 @model int
 
-<div id="draftList" title="Ongoing Drafts">
-    <h2>@Model.ToString() Ongoing Drafts</h2>
-    <a href="/Create/">Add new draft...</a>
+<div id="draftList" title="Ongoing Drafts" class="jumbotron">
+    <h1>@Model.ToString() Ongoing Drafts</h1>
+    <hr>
+    <a href="/Create/" class="btn-lg btn btn-primary" role="button">Add new draft...</a>
 </div>

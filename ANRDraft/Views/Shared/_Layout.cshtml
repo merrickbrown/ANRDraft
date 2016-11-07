@@ -12,26 +12,16 @@
     @RenderSection("scripts", required: false)
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-static-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("ANRDraft", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
-                </ul>
-            </div>
-        </div>
-    </div>
+
     <div class="container body-content">
+        <nav class="navbar navbar-light bg-faded">
+            <div class="nav navbar-nav">
+                @Html.ActionLink("ANRDraft", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("Home", "Index", "Home", new { @class = "nav-item nav-link" })
+                @Html.ActionLink("About", "About", "Home", new { @class = "nav-item nav-link" })
+                @Html.ActionLink("Contact", "Contact", "Home", new { @class = "nav-item nav-link" })
+            </div>
+        </nav>
         @RenderBody()
         <hr />
         <footer>

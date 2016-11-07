@@ -13,8 +13,8 @@
             var index = $("#tbNames").children("tr").length;
 
             var indexCell = "<td style='display:none'><input name='Names.Index' type='hidden' value='" + index + "' /></td>";
-            var titleCell = "<td><input id='Names_" + index + "' name='Names[" + index + "]' type='text' value='' /></td>";
-            var removeCell = "<td><input id='btnAddName' type='button' value='Remove' onclick='removeRow(" + index + ");' /></td>";
+            var titleCell = "<td><input id='Names_" + index + "' name='Names[" + index + "]' type='text' class='form-control'/></td>";
+            var removeCell = "<td><button id='btnAddName' class='btn btn-sm btn-outline-warning' type='button' onclick='removeRow(" + index + ");'>Remove</button></td>";
 
             var newRow = "<tr id='trName" + index + "'>" +
             indexCell + titleCell + removeCell + "</tr>";
@@ -44,28 +44,29 @@
     </script>
 </head>
 <body>
-    @if(Model.ServerErrorMessage.Count() > 0) {
+    @if (Model.ServerErrorMessage.Count() > 0)
+    {
         <div class="alert alert-danger" role="alert">@Model.ServerErrorMessage</div>
     }
-    @using (Html.BeginForm("Index", "Create", FormMethod.Post, new {id = "frmDraftSetup" }))
+    @using (Html.BeginForm("Index", "Create", FormMethod.Post, new { id = "frmDraftSetup" }))
     {
         @Html.ValidationSummary(true)
         @Html.AntiForgeryToken()
-        <div id="createNewDraft">
-            <fieldset>
+        <div id="createNewDraft" class="container">
+            <fieldset class="form-group">
                 <div class="editor-label">
                     @Html.LabelFor(model => model.SecretName, "Draft Name")
                 </div>
                 <div class="editor-field">
-                    @Html.EditorFor(model => model.SecretName, new { placeholder = "Enter the draft name" })
+                    @Html.TextBoxFor(model => model.SecretName, new { @placeholder = "Enter the draft name", @class = "form-control" })
                     @Html.ValidationMessageFor(model => model.SecretName)
-                    <p> This is the unique name for your draft, which you will use for access. Anyone with this name will have access to your draft, so keep it a secret!</p>
+                    <small class="form-text"> This is the unique name for your draft, which you will use for access. Anyone with this name will have access to your draft, so keep it a secret!</small>
                 </div>
                 <div class="editor-label">
                     @Html.LabelFor(model => model.DecklistLocator, "Decklist ID")
                 </div>
                 <div class="editor-field">
-                    @Html.EditorFor(model => model.DecklistLocator)
+                    @Html.TextBoxFor(model => model.DecklistLocator, new { @placeholder = "Enter the decklist ID", @class = "form-control" })
                     @Html.ValidationMessageFor(model => model.DecklistLocator)
                     <select id="defaultDecklistIDs" class="form-control">
                         <option value="0" data-deckID="">Suggested Decklists</option>
@@ -76,49 +77,48 @@
                         <option value="5" data-deckID="38478">Hypercube (Corp)</option>
                         <option value="6" data-deckID="38479">Hypercube (Runner)</option>
                     </select>
-                    <p>The decklist ID is the number in the URL when you view the deck on <a href="https://netrunnerdb.com/">netrunnerdb.com</a>. You can only use a <strong>public</strong> deck hosted on <a href="https://netrunnerdb.com/">netrunnerdb</a>, so if you want to use a decklist that you've made, make sure to publish it.</p>
+                    <small class="form-text">The decklist ID is the number in the URL when you view the deck on <a href="https://netrunnerdb.com/">netrunnerdb.com</a>. You can only use a <strong>public</strong> deck hosted on <a href="https://netrunnerdb.com/">netrunnerdb</a>, so if you want to use a decklist that you've made, make sure to publish it.</small>
                 </div>
                 <div class="editor-label">
                     @Html.LabelFor(model => model.PackSize, "Cards per pack")
                 </div>
                 <div class="editor-field">
-                    @Html.EditorFor(model => model.PackSize)
-                    @Html.ValidationMessageFor(model => model.PackSize)
+                    @Html.EditorFor(model => model.PackSize, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.PackSize, null, new { @class = "help-inline" })
                 </div>
                 <div class="editor-label">
                     @Html.LabelFor(model => model.NumRounds, "Number of rounds")
                 </div>
                 <div class="editor-field">
-                    @Html.EditorFor(model => model.NumRounds)
+                    @Html.EditorFor(model => model.NumRounds, new { htmlAttributes = new { @class = "form-control" } })
                     @Html.ValidationMessageFor(model => model.NumRounds)
                 </div>
-                 <div>
-
-                     </div>
-                <table>
+                <div>
+                    <table class="table table-striped table-sm">
                     <thead>
-                        <tr>
-                            <td>
-                                <label>Participant Name</label>
-                            </td>
-                            <td>
-                                <input id="btnAddName" type="button"
-                                       onclick="addRow();" value="Add Name" />
-                            </td>
-                        </tr>
-                        <tr>
+                    <tr>
+                    <td>
+                    <label>Player Name</label>
+                    </td>
+                    <td>
+                    <button id="btnAddName" type="button" class="btn btn-secondary btn-sm"
+                    onclick="addRow();">Add Player</button>
+                    </td>
+                    </tr>
+                    <tr>
 
 
-                        </tr>
+                    </tr>
                     </thead>
                     <tbody id="tbNames"></tbody>
-                </table>
-                </fieldset>
+                    </table>
+
                 </div>
+            </fieldset>
                 <div>
-        <input class="btnSubmit" type="submit" value="Create!">
-                    <p>Longer decklists may take some time to load (~20sec or more if many people are trying to all create drafts at once)</p>
+                    <button class="btnSubmit btn btn-primary" type="submit">Create!</button>
                 </div>
+        </div>
 
     }
 </body>

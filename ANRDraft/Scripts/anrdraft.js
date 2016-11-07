@@ -81,7 +81,7 @@ $(function () {
         $selectedCards.empty();
         for (var i = 0; i < arrySelectedCards.length; i++) {
             var $item = $(document.createElement('tr'));
-            $item.append('<td>' + arrySelectedCards[i].Number + '</td>');
+            $item.append('<td>' + arrySelectedCards[i].Number + " &times" + '</td>');
             $item.append('<td>' + arrySelectedCards[i].Title + '</td>');
             $selectedCards.append($item);
         }

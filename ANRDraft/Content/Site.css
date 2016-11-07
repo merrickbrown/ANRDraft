@@ -36,6 +36,10 @@ textarea {
     width: 25%;
 }
 
+input[type=text]:focus {
+    border: solid #555;
+}
+
 
     .no-touch .cardimage:hover, .cardimage.hovered {
         -webkit-transform: scale(1.50); /* Safari and Chrome */
@@ -45,7 +49,7 @@ textarea {
         transform:         scale(1.5);
     }
 
-    .container {
+    #draftcontainer {
         max-width: 1400px;
     }
 

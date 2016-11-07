@@ -12,7 +12,7 @@ using System.Web;
 namespace ANRDraft
 {
     /// <summary>
-    /// Provides access to netrunnerdb and 
+    /// Provides access to netrunnerdb
     /// </summary>
     public class NRDBClient
     {
