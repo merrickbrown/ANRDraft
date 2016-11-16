@@ -29,6 +29,11 @@ namespace ANRDraft
         public string Title { get { return _data["title"].Value<string>(); } }
 
         /// <summary>
+        /// The type of a card
+        /// </summary>
+        public string Type { get { return _data["type_code"].Value<string>().ToUpperInvariant(); } }
+
+        /// <summary>
         /// The ID given to the card by netrunnerdb.com
         /// </summary>
         public string DBID

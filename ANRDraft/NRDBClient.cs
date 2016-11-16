@@ -72,6 +72,7 @@ namespace ANRDraft
                         }
                         else
                         {
+                            // filter out the identity from the list
                             if (cd.Data.Value<string>("type_code") == "identity")
                             {
                                 identityFound = true;

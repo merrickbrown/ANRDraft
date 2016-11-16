@@ -3,8 +3,8 @@ $(function () {
     // Reference the auto-generated proxy for the hub.
     var draft = $.connection.draftHub;
     var $currentPack = $('#currentPack');
-    var $selectedCards = $('#selectedCards');
-    var arrySelectedCards = [];
+    var $selectedCardsElement = $('#selectedCards');
+    var selectedCards = {};
     // the function that updates the pack
     var updatePack = function (draft) {
 
@@ -64,34 +64,46 @@ $(function () {
     
     var addCardToSelectedList = function (card) {
         var added = false;
-        for (var i = 0; i < arrySelectedCards.length; i++) {
-            if (arrySelectedCards[i].Title === card.Data.Title) {
-                arrySelectedCards[i].Number++;
-                added = true;
-                break;
+        if (card.Data.Type in selectedCards) {
+            var arrOfType = selectedCards[card.Data.Type];
+            for (var i = 0; i < arrOfType.length; i++) {
+                if (arrOfType[i].Title === card.Data.Title) {
+                    arrOfType[i].Number++;
+                    added = true;
+                    break;
+                }
             }
-        }
-        if (!added) {
-            arrySelectedCards.push({ Title: card.Data.Title, Number: 1 });
+            if (!added) {
+                arrOfType.push({ Title: card.Data.Title, Number: 1 });
+            }
+        } else {
+            selectedCards[card.Data.Type] = [{Title: card.Data.Title, Number: 1}]
         }
     };
 
     var showSelectedList = function () {
         
-        $selectedCards.empty();
-        for (var i = 0; i < arrySelectedCards.length; i++) {
-            var $item = $(document.createElement('tr'));
-            $item.append('<td>' + arrySelectedCards[i].Number + " &times" + '</td>');
-            $item.append('<td>' + arrySelectedCards[i].Title + '</td>');
-            $selectedCards.append($item);
+        $selectedCardsElement.empty();
+        var types = Object.keys(selectedCards).sort();
+        for (var j = 0; j < types.length; j++) {
+            var ofType = selectedCards[types[j]];
+            var $typecontainer = $(document.createElement('tr'));
+            //$typecontainer.addClass('table-info');
+            $typecontainer.append("<td colspan = 2><b>" + types[j] + 'S </b></td>');
+            $selectedCardsElement.append($typecontainer);
+            for (var i = 0; i < ofType.length; i++) {
+                $item = $(document.createElement('tr'));
+                $item.append('<td>' + ofType[i].Number + '</td>');
+                $item.append('<td>' + ofType[i].Title + '</td>');
+                $selectedCardsElement.append($item);
+            }
         }
-
     }
 
     var updateSelected = function (draft) {
         draft.server.getSelectedCards(draftname, playername).done(
             function (cards) {
-                arrySelectedCards = [];
+                selectedCards = [];
                 $.each(cards, function (i, card) {
                     addCardToSelectedList(card);
                 });

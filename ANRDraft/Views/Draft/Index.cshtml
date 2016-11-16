@@ -1,20 +1,50 @@
 ﻿@model ANRDraft.Models.DraftViewModel
 
 @{
-    ViewBag.Title = "Show";
+    ViewBag.Title = "Draft " + @Model.Name + " Info";
 }
 
-<h2>Show</h2>
-<p>Your draft was created on @Model.Created.Date.ToShortDateString()</p>
-<p>Tell your fellow participants to go to /play/@Model.Name/*playername* to access the draft.</p>
-<ul> @foreach (var name in @Model.PlayerNames)
-{
+<h2>Draft: @Model.Name</h2>
+<div class="container">
+    <div class="row">
 
-    <li><a href="/play/@Model.Name/@name"> @name</a></li>
-}</ul>
-<ul>
-    @foreach(var kvp in @Model.Decklist)
-    {
-        <li>@kvp.Value x @kvp.Key</li>
-    }
-</ul>
+        <div class="col-md-6 push-md-6">
+            <p>Your draft was created on @Model.Created.Date.ToShortDateString()</p>
+            <p>Tell your fellow participants to go to /play/@Model.Name/*playername* to access the draft.</p>
+
+
+            <ul class="list-group">
+                <li class="list-group-item active">Players</li>
+                @foreach (var name in @Model.PlayerNames)
+            {
+
+                    <li class="list-group-item"><a href="/play/@Model.Name/@name"> @name</a></li>
+                }
+            </ul>
+        </div>
+
+        <div class="col-md-6 pull-md-6">
+            <ul>
+                <table class="table table-sm">
+                    <thead>
+                        Decklist
+                    </thead>
+                    <tbody id="draftList">
+                        @foreach (var kvp in @Model.Decklist)
+            {
+                            <tr>
+                                <td>@kvp.Value</td>
+                                <td>@kvp.Key</td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </ul>
+        </div>
+    </div>
+
+</div>
+
